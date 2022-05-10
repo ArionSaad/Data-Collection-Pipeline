@@ -14,7 +14,7 @@
 - Created methods within the class that will navigate to the top seller page and make a list of the links to each game's store page.
 - Used if __name__ == "__main__" to make sure the code only runs if the file is run directly rather than on any import
 
-'''python
+```python
 
 from selenium import webdriver
 import requests
@@ -83,4 +83,4 @@ class Scraper:
 
     if __name__ == "__main__":
     scrape = Scraper()
-'''python
+```python

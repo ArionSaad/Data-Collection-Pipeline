@@ -84,3 +84,5 @@ class Scraper:
 if __name__ == "__main__":
     scrape = Scraper()
 ```python
+
+## Milestone 3

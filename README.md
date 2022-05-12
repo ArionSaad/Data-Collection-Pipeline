@@ -83,6 +83,9 @@ class Scraper:
     
 if __name__ == "__main__":
     scrape = Scraper()
-```python
+```
 
 ## Milestone 3
+
+- Created methods to parse the unique Id for each product from the store page in addiion to generating an UUID4 for each.
+-

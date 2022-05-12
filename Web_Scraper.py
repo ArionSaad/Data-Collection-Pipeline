@@ -2,6 +2,8 @@ from selenium import webdriver
 import requests
 from bs4 import BeautifulSoup 
 from time import sleep
+import uuid
+
 
 driver = webdriver.Chrome()
 
@@ -24,6 +26,8 @@ class Scraper:
 
         sleep(1)
         self.make_list()
+
+        self.get_product_ID()
         pass
 
     def topseller(self):
@@ -56,15 +60,32 @@ class Scraper:
         # this_page = requests.get(this_URL)
         # this_soup = BeautifulSoup(this_page.text, 'html.parser')
         game_container = driver.find_element_by_xpath('//*[@id="search_resultsRows"]') # this container holds all the top games
-        top_list = game_container.find_elements_by_xpath('./a')
-        top_list_links = [elem.get_attribute('href') for elem in top_list] # this extracts the hyperlinks to the individual store page 
+        self.top_list = game_container.find_elements_by_xpath('./a')
+        top_list_links = [elem.get_attribute('href') for elem in self.top_list] # this extracts the hyperlinks to the individual store page 
         #print(top_list_links[1])
-        for i in range(10):
+        for i in range(20):            
             self.game_list.append(top_list_links[i])
             pass
         print(self.game_list)
         pass
-        
+    
+    def get_product_ID(self):
+        # for i in self.game_list:
+        #     page = requests.get(i)
+        #     soup = BeautifulSoup(page.text, 'html.parser')
+        #     fish = soup.find(name ='div', attrs={'class':"glance_tags popular_tags"})
+        #     #prod_id = fish['data-appid']
+        #     print(fish['data-appid'])
+        for i in range(20):
+            
+            prod_id = self.top_list[i].get_attribute('data-ds-appid')
+            if prod_id == None:
+                prod_id = self.top_list[i].get_attribute('data-ds-bundleid')
+            print(prod_id)
+        pass
+
+    def generate_UUID(self):
+        unique_id = uuid.uuid4()
 
 
     pass

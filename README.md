@@ -210,7 +210,7 @@ if __name__ == "__main__":
         pass
 
     def save_image_file(self):
-        t = 0
+        
         for i in range(len(self.game_list)):
             try:
                 game_folder = self.game_dict2[f'{i}']['Name']

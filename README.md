@@ -225,3 +225,7 @@ if __name__ == "__main__":
                 pass
         pass
 ```
+
+## Milestone 4
+
+- Created a unit test file to test all the methods in the Scraper class.

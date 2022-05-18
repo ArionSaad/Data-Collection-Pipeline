@@ -13,15 +13,22 @@ from lxml import etree
 
 
 
-driver = webdriver.Chrome()
+driver = webdriver.Chrome() #Using Chrome as the browser for the selenium web driver
 
 class Scraper:
-    def __init__(self):
+    '''
+        This class is for a Web scraper that will automatically collect data on the top selling games on Steam.
+
+        It is populated with methods used to navigate the webpage, collect specific bits of information and then stores the information on a local json file. 
+    '''
+    def __init__(self, number_of_games, url):
+        self.number_of_games = number_of_games
+
         self.make_folder()
 
         self.make_dictionary()
 
-        self.URL = "https://store.steampowered.com/"
+        self.URL = url
 
         driver.maximize_window()
 
@@ -58,6 +65,7 @@ class Scraper:
         pass
 
     def make_folder(self):
+        # This method creates a folder for the raw data to be saved locally.
         self.root_dir = os.path.dirname(os.path.abspath(__file__)) 
         self.raw_data_folder = 'raw_data'
 
@@ -68,6 +76,7 @@ class Scraper:
             pass
 
     def go_to_top_seller(self):
+        # This method navigates to the top sellers page from the homepage of Steam.
         try:
             top_seller_link = driver.find_element(By.XPATH, '//*[@id="responsive_page_template_content"]/div[1]/div[1]/div/div[1]/div[8]/a[1]')
             top_seller_link.click()
@@ -75,6 +84,7 @@ class Scraper:
             pass
 
     def cookie_button(self):
+        # This method is used to get rid of the cookie confirmation pop up.
         try:
             reject_cookie_button = driver.find_element(By.XPATH, '//*[@id="rejectAllButton"]')
             reject_cookie_button.click()
@@ -86,15 +96,20 @@ class Scraper:
             pass
     
     def scrolling(self):
+        # This method is used to scroll down the web page.
         driver.execute_script("window.scrollBy(0,2000)","")
 
     def make_dictionary(self):
-        self.game_dict = {'id':[], 'uuid':[], 'name':[], 'image':[]}
-        self.game_dict2 = {}
+        #This method sets up the dictionaries where the data for each game will be stored.
+        self.game_dict = {}
         pass
 
-    def make_list_of_links(self): # makes a list of links of the top selling games which will then be parsed by other methods to extract data
+    def make_list_of_links(self): 
+        # Makes a list of links of the top selling games which will then be parsed by other methods to extract data
+
         self.game_list = []        
+
+        # The following code is used to fillter the top selling page so only the game software is listed.
 
         button_filter_type = driver.find_element(By.XPATH, '//*[@id="additional_search_options"]/div[3]/div[1]')
         button_filter_type.click()
@@ -113,29 +128,41 @@ class Scraper:
         #print(self.top_list)
         top_list_links = [elem.get_attribute('href') for elem in top_list] # this extracts the hyperlinks to the individual store page 
 
-        for i in range(20):  # select the top 20 games on the list          
+        for i in range(self.number_of_games):  # select the top 20 games on the list          
             self.game_list.append(top_list_links[i])
-            self.game_dict2[f'{i}'] = {}
+            self.game_dict[f'{i}'] = {}
             pass
         pass
+
+    def make_soup(self, var): 
+        # creates the soup from a url from which data can be extracted 
+
+        page = requests.get(self.game_list[var])
+        soup = BeautifulSoup(page.text, 'html.parser')
+        return soup
     
-    def get_product_ID(self): # generate a user friendly id unique to each product
+    def get_product_ID(self): 
+        
+        # generate a user friendly id unique to each game
         
         for i in range(len(self.game_list)):
-            page = requests.get(self.game_list[i])
-            soup = BeautifulSoup(page.text, 'html.parser')
+            # page = requests.get(self.game_list[i])
+            # soup = BeautifulSoup(page.text, 'html.parser')
+            soup = self.make_soup(i)
             fish = soup.find(name ='div', attrs={'class':"glance_tags popular_tags"})
             prod_id = fish['data-appid']
-            self.game_dict['id'].append(prod_id)
+           
 
-            self.game_dict2[f'{i}']['ID'] = prod_id 
+            self.game_dict[f'{i}']['ID'] = prod_id 
             
             #print(fish['data-appid'])
 
         
         pass
 
-    def generate_UUID(self): # generate a unique ID for each product
+    def generate_UUID(self): 
+        
+        # generate an UUID for each game
         
         
         for i in range(len(self.game_list)):
@@ -143,87 +170,101 @@ class Scraper:
 
             uuid_str = str(unique_id)
 
-            self.game_dict['uuid'].append(uuid_str)
+            
 
-            self.game_dict2[f'{i}']['UUID'] = uuid_str
+            self.game_dict[f'{i}']['UUID'] = uuid_str
 
             
 
 
-    def get_cover_image(self): #gets the cover image of the game
+    def get_cover_image(self): 
+        
+        #gets the cover image of the game
         
         for i in range(len(self.game_list)):
-            page = requests.get(self.game_list[i])
-            soup = BeautifulSoup(page.text, 'html.parser')
+            # page = requests.get(self.game_list[i])
+            # soup = BeautifulSoup(page.text, 'html.parser')
+            soup = self.make_soup(i)
             fish = soup.find(name='img', attrs={'class':'game_header_image_full'})
             img = fish['src']
 
-            self.game_dict['image'].append(img)
+            
 
-            self.game_dict2[f'{i}']['Image'] = img          
+            self.game_dict[f'{i}']['Image'] = img          
             
         pass
     
-    def get_game_title(self): # gets the game's title
+    def get_game_title(self): 
+        
+        # gets the game's title
         
         for i in range(len(self.game_list)):
-            page = requests.get(self.game_list[i])
-            soup = BeautifulSoup(page.text, 'html.parser')
+            # page = requests.get(self.game_list[i])
+            # soup = BeautifulSoup(page.text, 'html.parser')
+            soup = self.make_soup(i)
             fish = soup.find(name='div', attrs={'id':'appHubAppName', 'class':'apphub_AppName'})
             name = fish.text
 
-            self.game_dict['name'].append(name)
-
-            self.game_dict2[f'{i}']['Name'] = name            
             
 
-    ## NOTETOSELF : get more details from each game page by creating more methods; number of reviews, tags, review avg, price etc   
-
+            self.game_dict[f'{i}']['Name'] = name            
+    
     def get_game_tags(self):
-        ## BROKEN
+        ## BROKEN 
+
+        # Gets the tags for the game 
+
         for i in range(len(self.game_list)):
-            page = requests.get(self.game_list[i])
-            soup = BeautifulSoup(page.text, 'html.parser')
+            # page = requests.get(self.game_list[i])
+            # soup = BeautifulSoup(page.text, 'html.parser')
+            soup = self.make_soup(i)
             fish =soup.find(name='div' , attrs={'class':"glance_tags popular_tags" })
             tag_list_html = fish.find_all('a')
             tag_list = [elem.text for elem in tag_list_html]
-            self.game_dict2[f'{i}']['Tags'] = tag_list
+
+            self.game_dict[f'{i}']['Tags'] = tag_list
 
     def game_dev(self):
+        #Get the name of the developer
         for i in range(len(self.game_list)):
-            page = requests.get(self.game_list[i])
-            soup = BeautifulSoup(page.text, 'html.parser')
+            # page = requests.get(self.game_list[i])
+            # soup = BeautifulSoup(page.text, 'html.parser')
+            soup = self.make_soup(i)
             fish =soup.find(name='div' , attrs={'class':"summary column", 'id':'developers_list' })
             fish_list = fish.find_all('a')
             dev_list = [elem.text for elem in fish_list]
             
-            self.game_dict2[f'{i}']['Developers'] = dev_list
+            self.game_dict[f'{i}']['Developers'] = dev_list
 
     def game_pub(self):
+        #Get's the name of the publisher
         for i in range(len(self.game_list)):
-            page = requests.get(self.game_list[i])
-            soup = BeautifulSoup(page.text, 'html.parser')
+            # page = requests.get(self.game_list[i])
+            # soup = BeautifulSoup(page.text, 'html.parser')
+            soup = self.make_soup(i)
             fish = etree.HTML(str(soup))
             try:
                 pub = fish.xpath('//*[@id="game_highlights"]/div[1]/div/div[3]/div[4]/div[2]/a')[0].text
                 
-                self.game_dict2[f'{i}']['Publisher'] = pub
+                self.game_dict[f'{i}']['Publisher'] = pub
             except: 
                 pass
 
     def release_date(self):
+        #Finds the release date
         for i in range(len(self.game_list)):
-            page = requests.get(self.game_list[i])
-            soup = BeautifulSoup(page.text, 'html.parser')
+            # page = requests.get(self.game_list[i])
+            # soup = BeautifulSoup(page.text, 'html.parser')
+            soup = self.make_soup(i)
             fish = soup.find(name='div', attrs={'class':'date'})
             date = fish.text
 
-            self.game_dict2[f'{i}']['Release_Date'] = date
+            self.game_dict[f'{i}']['Release_Date'] = date
 											
 
 
     def make_game_folder(self):
-        #this method makes a folder for each game
+        #this method makes a folder for each game and creates a json file of the data extracted 
         
         for i in range(len(self.game_list)):
             try:
@@ -233,7 +274,7 @@ class Scraper:
 
                 os.mkdir(path)
 
-                dict = self.game_dict2[f'{i}']
+                dict = self.game_dict[f'{i}']
 
                 with open(f'{path}/data.json', 'w') as fp:
                     json.dump(dict, fp)
@@ -242,18 +283,18 @@ class Scraper:
             except:
                 
                 pass
-        #and also creats json file for each game's dictionary 
+        
         pass
 
     def save_image_file(self):
-        t = 0
+        #downloads the images
         for i in range(len(self.game_list)):
             try:
-                game_folder = self.game_dict2[f'{i}']['Name']
+                game_folder = self.game_dict[f'{i}']['Name']
                 path = os.path.join(self.root_dir, self.raw_data_folder, game_folder, 'images')
                 os.mkdir(path)
 
-                urllib.request.urlretrieve(self.game_dict2[f'{i}']['Image'], f'{path}/1.jpg')
+                urllib.request.urlretrieve(self.game_dict[f'{i}']['Image'], f'{path}/1.jpg')
 
                 
             except:
@@ -265,4 +306,6 @@ class Scraper:
     pass
 
 if __name__ == "__main__":
-    scrape = Scraper()
+    number_of_games = 20
+    url = "https://store.steampowered.com/"
+    scrape = Scraper(number_of_games, url)

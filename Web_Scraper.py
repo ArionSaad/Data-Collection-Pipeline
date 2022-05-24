@@ -229,25 +229,7 @@ class Scraper:
         except:
             pass
         
-        # for i in range(len(self.game_list)):
-        #     try:
-        #         game_folder = self.game_dict[f'{i}']['Name']
-
-        #         path = os.path.join(self.root_dir, self.raw_data_folder, game_folder)
-
-        #         os.mkdir(path)
-
-        #         dict = self.game_dict[f'{i}']
-
-        #         with open(f'{path}/data.json', 'w') as fp:
-        #             json.dump(dict, fp)
-
-                
-        #     except:
-                
-        #         pass
-        
-        # pass
+     
 
     def save_image_file(self, game_folder, img):
         #downloads the images
@@ -259,16 +241,6 @@ class Scraper:
         except:
             pass
 
-        # for i in range(len(self.game_list)):
-        #     try:
-        #         game_folder = self.game_dict[f'{i}']['Name']
-                
-
-                
-        #     except:
-                
-        #         pass
-        # pass
 
     def _collect_data(self, number):
         # This method runs all the methods for collecting data

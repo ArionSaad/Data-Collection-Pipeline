@@ -22,14 +22,17 @@ class Scraper:
         It is populated with methods used to navigate the webpage, collect specific bits of information and then stores the information on a local json file. 
     '''
     def __init__(self, number_of_games, url):
+
         self.number_of_games = number_of_games
-
-        self.make_folder()
-
-        self.make_dictionary()
 
         self.URL = url
 
+        self.game_list = []  
+
+        self.game_dict = {}
+
+        self.make_folder()
+        
         driver.maximize_window()
 
         driver.get(self.URL)
@@ -60,7 +63,6 @@ class Scraper:
         self.make_game_folder()
 
         self.save_image_file()
-
 
         pass
 
@@ -99,15 +101,10 @@ class Scraper:
         # This method is used to scroll down the web page.
         driver.execute_script("window.scrollBy(0,2000)","")
 
-    def make_dictionary(self):
-        #This method sets up the dictionaries where the data for each game will be stored.
-        self.game_dict = {}
-        pass
-
     def make_list_of_links(self): 
         # Makes a list of links of the top selling games which will then be parsed by other methods to extract data
 
-        self.game_list = []        
+              
 
         # The following code is used to fillter the top selling page so only the game software is listed.
 

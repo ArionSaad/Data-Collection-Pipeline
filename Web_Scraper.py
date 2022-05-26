@@ -18,13 +18,13 @@ class Scraper:
 
         It is populated with methods used to navigate the webpage, collect specific bits of information and then stores the information on a local json file. 
     '''
-    def __init__(self, number_of_games: int, url: string, driver):
+    def __init__(self, number_of_games: int, url: string,):
+
+        self.driver = webdriver.Chrome() #Using Chrome as the browser for the selenium web driver  
 
         self.number_of_games = number_of_games # number of games that will have their data collected
 
         self.URL = url # URL to the home page of the website
-
-        self.driver = driver
 
         self._make_folder()
         
@@ -46,6 +46,8 @@ class Scraper:
 
         self._collect_data(self.number_of_games)
 
+        self._close_browser()
+
         pass
 
     def _make_folder(self):
@@ -64,11 +66,16 @@ class Scraper:
         self.driver.maximize_window()
 
         self.driver.get(self.URL)
+    
+    def _close_browser(self):
+        #This method will close the browser
+
+        self.driver.close()
 
     def _go_to_top_seller(self):
         # This method navigates to the top sellers page from the homepage of Steam.
         try:
-            top_seller_link = driver.find_element(By.XPATH, '//*[@id="responsive_page_template_content"]/div[1]/div[1]/div/div[1]/div[8]/a[1]')
+            top_seller_link = self.driver.find_element(By.XPATH, '//*[@id="responsive_page_template_content"]/div[1]/div[1]/div/div[1]/div[8]/a[1]')
             top_seller_link.click()
         finally:
             pass
@@ -76,22 +83,22 @@ class Scraper:
     def _cookie_button(self):
         # This method is used to get rid of the cookie confirmation pop up.
         try:
-            reject_cookie_button = driver.find_element(By.XPATH, '//*[@id="rejectAllButton"]')
+            reject_cookie_button = self.driver.find_element(By.XPATH, '//*[@id="rejectAllButton"]')
             reject_cookie_button.click()
         except AttributeError:
-            driver.switch_to('#cookiePrefPopup')
-            reject_cookie_button = driver.find_element(By.XPATH, '//*[@id="rejectAllButton"]')
+            self.driver.switch_to('#cookiePrefPopup')
+            reject_cookie_button = self.driver.find_element(By.XPATH, '//*[@id="rejectAllButton"]')
             reject_cookie_button.click()
         finally:
             pass
     
     def _scrolling(self):
         # This method is used to scroll down the web page.
-        driver.execute_script("window.scrollBy(0,2000)","")
+        self.driver.execute_script("window.scrollBy(0,2000)","")
 
     def _filter_page(self):
         # This method filters the top selling page so only the games are showing
-        button_filter_type = driver.find_element(By.XPATH, '//*[@id="additional_search_options"]/div[3]/div[1]')
+        button_filter_type = self.driver.find_element(By.XPATH, '//*[@id="additional_search_options"]/div[3]/div[1]')
         button_filter_type.click()
 
         sleep(2)
@@ -105,7 +112,7 @@ class Scraper:
     def _make_list_of_links(self, number: int) -> list: 
         # Makes a list of links of the top selling games which will then be parsed by other methods to extract data
 
-        game_container = driver.find_element(By.XPATH, '//*[@id="search_resultsRows"]') # this container holds all the top games
+        game_container = self.driver.find_element(By.XPATH, '//*[@id="search_resultsRows"]') # this container holds all the top games
         sleep(1)
         top_list = game_container.find_elements(By.XPATH, './a')
         sleep(1)
@@ -281,5 +288,5 @@ class Scraper:
 if __name__ == "__main__":
     number_of_games = 20
     url = "https://store.steampowered.com/"
-    driver = webdriver.Chrome() #Using Chrome as the browser for the selenium web driver    
-    scrape = Scraper(number_of_games, url, driver)
+      
+    scrape = Scraper(number_of_games, url)

@@ -230,6 +230,7 @@ if __name__ == "__main__":
 
 - Created a unit test file to test the public methods in the Scraper class.
 - In order to make sure the web scraper was collecting the correct data from the store pages, a number of unit tests were written to validate the data collected.
+- To optimize the code repeated for loops where coalesced into a single method with a single for loop. This made the code run much faster than before. 
 ```python 
 import unittest
 import requests

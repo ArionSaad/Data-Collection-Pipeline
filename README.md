@@ -332,3 +332,7 @@ class ScraperTestCase(unittest.TestCase):
 
 unittest.main(argv=[''], verbosity=2, exit=False)
 ```
+
+## Mileston 5
+
+- Set up AWS cli and IAM user on AWS

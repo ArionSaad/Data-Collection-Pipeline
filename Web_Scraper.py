@@ -3,8 +3,10 @@ import string
 import requests
 import uuid
 import os
+import shutil
 import json
 import urllib.request
+import boto3
 from bs4 import BeautifulSoup 
 from time import sleep
 from selenium import webdriver
@@ -25,6 +27,8 @@ class Scraper:
         self.number_of_games = number_of_games # number of games that will have their data collected
 
         self.URL = url # URL to the home page of the website
+
+        self.s3_client = boto3.client('s3')
 
         self._make_folder()
         
@@ -282,6 +286,24 @@ class Scraper:
             self.make_game_folder(game_folder, a_dict)
 
             self.save_image_file(game_folder, img)
+    
+    def delete_folder(self):
+        #Method used to delte folder for testing purposes 
+        path = 'raw_data'
+        shutil.rmtree(path)
+        pass
+
+    def create_bucket(self):
+        # Method used to create bucket on AWS S3
+        try:
+            bucket_name = 'arion-steam-scraper'
+            s3_location = {'LocationConstraint': 'eu-west-2'}
+
+            self.s3_client.create_bucket(Bucket=bucket_name, CreateBucketConfiguration=s3_location)
+        except:
+            pass
+        pass
+
             
     pass
 

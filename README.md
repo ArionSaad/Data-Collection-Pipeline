@@ -335,4 +335,32 @@ unittest.main(argv=[''], verbosity=2, exit=False)
 
 ## Mileston 5
 
-- Set up AWS cli and IAM user on AWS
+- Set up AWS cli and IAM user on AWS.
+- Uplodad the data json files and images to the s3 data lake.
+```python
+def upload_json_to_s3(self, game_folder):
+        # Method to upload json data file to s3
+        local_path = os.path.join(self.root_dir, self.raw_data_folder, game_folder, "data.json")
+        s3_path = os.path.join(game_folder, "data.json")
+
+        try:
+            self.s3_client.upload_file(local_path, self.bucket_name, s3_path)
+            
+        except:
+            pass
+
+    
+def upload_img_to_s3(self, img, game_folder):
+        # Method for uploading images to s3
+	try:
+            imageResponse = requests.get(img, stream=True).raw
+            content_type = imageResponse.headers['content-type']
+            extension = mimetypes.guess_extension(content_type)
+            s3_img = os.path.join(game_folder, 'cover' + extension)
+            self.s3_client.upload_fileobj(imageResponse, self.bucket_name, s3_img)
+            
+        except: 
+            pass
+```
+
+

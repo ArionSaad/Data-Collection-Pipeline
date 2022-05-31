@@ -8,7 +8,9 @@ import json
 import urllib.request
 import boto3
 import mimetypes
+import getpass 
 import pandas as pd
+import psycopg2
 from bs4 import BeautifulSoup 
 from time import sleep
 from selenium import webdriver
@@ -59,7 +61,7 @@ class Scraper:
 
         self._close_browser()
 
-        self.create_pd_dataframe()
+        #self.game_dict_to_rds()
 
         pass
 
@@ -353,7 +355,7 @@ class Scraper:
         DBAPI = 'psycopg2'
         ENDPOINT = 'arion-steam-dataset.ck6kqnmgieka.eu-west-2.rds.amazonaws.com' 
         USER = 'postgres'
-        PASSWORD = '' # make sure to inculde password before running
+        PASSWORD = getpass.getpass() # manually input password
         PORT = 5432
         DATABASE = 'postgres'
         engine = create_engine(f"{DATABASE_TYPE}+{DBAPI}://{USER}:{PASSWORD}@{ENDPOINT}:{PORT}/{DATABASE}")
@@ -363,7 +365,7 @@ class Scraper:
         #Takes the dictionay containing all data collected and uploads to RDS
         game_df = self.create_pd_dataframe(self.game_dict)
 
-        self.dataframe_to_rds(game_df)
+        self.dataframe_to_rds(game_df) 
 
 
     pass

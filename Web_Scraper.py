@@ -7,6 +7,7 @@ import shutil
 import json
 import urllib.request
 import boto3
+import mimetypes
 from bs4 import BeautifulSoup 
 from time import sleep
 from selenium import webdriver
@@ -30,6 +31,8 @@ class Scraper:
 
         self.s3_client = boto3.client('s3')
 
+        self.bucket_name = 'arion-steam-scraper'
+
         self._make_folder()
         
         self._open_browser()
@@ -47,6 +50,8 @@ class Scraper:
         self.game_list = self._make_list_of_links(self.number_of_games) # List of links to the store page of the games
 
         self.game_dict = self._make_dictionary(self.number_of_games) # Dictionary where the data for each game will be stored
+
+        self.create_bucket()
 
         self._collect_data(self.number_of_games)
 
@@ -286,6 +291,10 @@ class Scraper:
             self.make_game_folder(game_folder, a_dict)
 
             self.save_image_file(game_folder, img)
+
+            self.upload_json_to_s3(game_folder)
+
+            self.upload_img_to_s3(img, game_folder)
     
     def delete_folder(self):
         #Method used to delte folder for testing purposes 
@@ -296,15 +305,38 @@ class Scraper:
     def create_bucket(self):
         # Method used to create bucket on AWS S3
         try:
-            bucket_name = 'arion-steam-scraper'
+            
             s3_location = {'LocationConstraint': 'eu-west-2'}
 
-            self.s3_client.create_bucket(Bucket=bucket_name, CreateBucketConfiguration=s3_location)
+            self.s3_client.create_bucket(Bucket=self.bucket_name, CreateBucketConfiguration=s3_location)
         except:
             pass
         pass
 
+    def upload_json_to_s3(self, game_folder):
+        # Method to upload json data file to s3
+        local_path = os.path.join(self.root_dir, self.raw_data_folder, game_folder, "data.json")
+        s3_path = os.path.join(game_folder, "data.json")
+
+        try:
+            self.s3_client.upload_file(local_path, self.bucket_name, s3_path)
             
+        except:
+            pass
+
+    
+    def upload_img_to_s3(self, img, game_folder):
+        # Method for uploading images to s3
+        try:
+            imageResponse = requests.get(img, stream=True).raw
+            content_type = imageResponse.headers['content-type']
+            extension = mimetypes.guess_extension(content_type)
+            s3_img = os.path.join(game_folder, 'cover' + extension)
+            self.s3_client.upload_fileobj(imageResponse, self.bucket_name, s3_img)
+            
+        except: 
+            pass
+                
     pass
 
 if __name__ == "__main__":

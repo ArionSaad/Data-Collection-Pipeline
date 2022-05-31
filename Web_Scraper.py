@@ -8,12 +8,14 @@ import json
 import urllib.request
 import boto3
 import mimetypes
+import pandas as pd
 from bs4 import BeautifulSoup 
 from time import sleep
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from uuid import UUID 
 from lxml import etree 
+from sqlalchemy import create_engine
 
 class Scraper:
     '''
@@ -51,11 +53,13 @@ class Scraper:
 
         self.game_dict = self._make_dictionary(self.number_of_games) # Dictionary where the data for each game will be stored
 
-        self.create_bucket()
+        #self.create_bucket()
 
         self._collect_data(self.number_of_games)
 
         self._close_browser()
+
+        self.create_pd_dataframe()
 
         pass
 
@@ -292,9 +296,9 @@ class Scraper:
 
             self.save_image_file(game_folder, img)
 
-            self.upload_json_to_s3(game_folder)
+            #self.upload_json_to_s3(game_folder)
 
-            self.upload_img_to_s3(img, game_folder)
+            #self.upload_img_to_s3(img, game_folder)
     
     def delete_folder(self):
         #Method used to delte folder for testing purposes 
@@ -336,7 +340,32 @@ class Scraper:
             
         except: 
             pass
-                
+    
+    def create_pd_dataframe(self, a_dict):
+        #Creates a pandas dataframe from a dictionay
+        game_df = pd.DataFrame.from_dict(a_dict, orient='index') 
+        
+        return game_df
+
+    def dataframe_to_rds(self, df):
+        #Uploads a pandas dataframe to RDS
+        DATABASE_TYPE = 'postgresql'
+        DBAPI = 'psycopg2'
+        ENDPOINT = 'arion-steam-dataset.ck6kqnmgieka.eu-west-2.rds.amazonaws.com' 
+        USER = 'postgres'
+        PASSWORD = '' # make sure to inculde password before running
+        PORT = 5432
+        DATABASE = 'postgres'
+        engine = create_engine(f"{DATABASE_TYPE}+{DBAPI}://{USER}:{PASSWORD}@{ENDPOINT}:{PORT}/{DATABASE}")
+        df.to_sql('steam_dataset', engine, if_exists='replace')
+
+    def game_dict_to_rds(self):
+        #Takes the dictionay containing all data collected and uploads to RDS
+        game_df = self.create_pd_dataframe(self.game_dict)
+
+        self.dataframe_to_rds(game_df)
+
+
     pass
 
 if __name__ == "__main__":

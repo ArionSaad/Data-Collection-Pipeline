@@ -364,7 +364,7 @@ def upload_img_to_s3(self, img, game_folder):
         except: 
             pass
 	    
-	    def create_pd_dataframe(self, a_dict):
+def create_pd_dataframe(self, a_dict):
         #Creates a pandas dataframe from a dictionay
         game_df = pd.DataFrame.from_dict(a_dict, orient='index') 
         

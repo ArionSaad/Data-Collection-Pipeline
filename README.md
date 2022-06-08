@@ -337,6 +337,8 @@ unittest.main(argv=[''], verbosity=2, exit=False)
 
 - Set up AWS cli and IAM user on AWS.
 - Uplodad the data json files and images to the s3 data lake.
+- Coverted all collected data into a daaframe and uploaded to AWS RDS.
+- 
 ```python
 def upload_json_to_s3(self, game_folder):
         # Method to upload json data file to s3
@@ -361,6 +363,24 @@ def upload_img_to_s3(self, img, game_folder):
             
         except: 
             pass
+	    
+	    def create_pd_dataframe(self, a_dict):
+        #Creates a pandas dataframe from a dictionay
+        game_df = pd.DataFrame.from_dict(a_dict, orient='index') 
+        
+        return game_df
+
+def dataframe_to_rds(self, df):
+        #Uploads a pandas dataframe to RDS
+        DATABASE_TYPE = 'postgresql'
+        DBAPI = 'psycopg2'
+        ENDPOINT = 'arionsteam.ck6kqnmgieka.eu-west-2.rds.amazonaws.com'
+        USER = 'postgres'
+        PASSWORD = 'thiswillwork' # manually input password
+        PORT = 5432
+        DATABASE = 'arion_steam_database'
+        engine = create_engine(f"{DATABASE_TYPE}+{DBAPI}://{USER}:{PASSWORD}@{ENDPOINT}:{PORT}/{DATABASE}")
+        df.to_sql('steam_dataset', engine, if_exists='replace')
 ```
 
 

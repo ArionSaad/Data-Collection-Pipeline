@@ -18,6 +18,7 @@ from selenium.webdriver.common.by import By
 from uuid import UUID 
 from lxml import etree 
 from sqlalchemy import create_engine
+from tqdm import tqdm 
 
 class Scraper:
     '''
@@ -32,6 +33,8 @@ class Scraper:
         self.number_of_games = number_of_games # number of games that will have their data collected
 
         self.URL = url # URL to the home page of the website
+
+        self.unique_games_list = []
 
         self.s3_client = boto3.client('s3')
 
@@ -53,15 +56,19 @@ class Scraper:
 
         self.game_list = self._make_list_of_links(self.number_of_games) # List of links to the store page of the games
 
-        self.game_dict = self._make_dictionary(self.number_of_games) # Dictionary where the data for each game will be stored
+        self._close_browser()
 
-        #self.create_bucket()
+        self.game_dict = self._make_dictionary(self.number_of_games) # Dictionary where the data for each game will be stored        
+
+        self.create_bucket()
 
         self._collect_data(self.number_of_games)
 
-        self._close_browser()
+        
 
         #self.game_dict_to_rds()
+
+        print("all done")
 
         pass
 
@@ -262,16 +269,25 @@ class Scraper:
             urllib.request.urlretrieve(img, f'{path}/1.jpg')
         except:
             pass
-
+    
+    def add_unique_games(self, prod_id):
+        # this methid adds the unique id of each game to a list which will then be checked to avoid rescraping the same data
+        self.unique_games_list.append(prod_id)
 
     def _collect_data(self, number):
         # This method runs all the methods for collecting data
 
-        for i in range(number):
+        for i in tqdm(range(number)):
             store_page = self.game_list[i]
             soup = self.make_soup(store_page)
 
             prod_id = self.get_product_ID(soup)
+
+            if prod_id in self.unique_games_list: # This is to check if the game has already been scraped 
+                continue
+            else:
+                self.add_unique_games(prod_id)
+            
             self.game_dict[f'{i}']['ID'] = prod_id 
 
             img = self.get_cover_image(soup)
@@ -298,9 +314,9 @@ class Scraper:
 
             self.save_image_file(game_folder, img)
 
-            #self.upload_json_to_s3(game_folder)
+            self.upload_json_to_s3(game_folder)
 
-            #self.upload_img_to_s3(img, game_folder)
+            self.upload_img_to_s3(img, game_folder)
     
     def delete_folder(self):
         #Method used to delte folder for testing purposes 
@@ -353,11 +369,11 @@ class Scraper:
         #Uploads a pandas dataframe to RDS
         DATABASE_TYPE = 'postgresql'
         DBAPI = 'psycopg2'
-        ENDPOINT = 'arion-steam-dataset.ck6kqnmgieka.eu-west-2.rds.amazonaws.com' 
+        ENDPOINT = 'arionsteam.ck6kqnmgieka.eu-west-2.rds.amazonaws.com'
         USER = 'postgres'
-        PASSWORD = getpass.getpass() # manually input password
+        PASSWORD = 'thiswillwork' # manually input password
         PORT = 5432
-        DATABASE = 'postgres'
+        DATABASE = 'arion_steam_database'
         engine = create_engine(f"{DATABASE_TYPE}+{DBAPI}://{USER}:{PASSWORD}@{ENDPOINT}:{PORT}/{DATABASE}")
         df.to_sql('steam_dataset', engine, if_exists='replace')
 

@@ -383,4 +383,9 @@ def dataframe_to_rds(self, df):
         df.to_sql('steam_dataset', engine, if_exists='replace')
 ```
 
+## Milestone 6 
+
+- Added a progress bar using tqdm package. 
+- Added a method that will add the unique ID of each game to a list. This list will be checked to prevent the same game from being scraped again. 
+
 

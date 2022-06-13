@@ -62,11 +62,9 @@ class Scraper:
 
         self.create_bucket()
 
-        self._collect_data(self.number_of_games)
+        self._collect_data(self.number_of_games)        
 
-        
-
-        #self.game_dict_to_rds()
+        self.game_dict_to_rds()
 
         print("all done")
 
@@ -373,7 +371,7 @@ class Scraper:
         USER = 'postgres'
         PASSWORD = 'thiswillwork' # manually input password
         PORT = 5432
-        DATABASE = 'arion_steam_database'
+        DATABASE = 'postgres'
         engine = create_engine(f"{DATABASE_TYPE}+{DBAPI}://{USER}:{PASSWORD}@{ENDPOINT}:{PORT}/{DATABASE}")
         df.to_sql('steam_dataset', engine, if_exists='replace')
 

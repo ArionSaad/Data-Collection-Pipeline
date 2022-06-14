@@ -271,6 +271,25 @@ class Scraper:
     def add_unique_games(self, prod_id):
         # this methid adds the unique id of each game to a list which will then be checked to avoid rescraping the same data
         self.unique_games_list.append(prod_id)
+    
+    def check_id(self, prod_id):
+        # this method will check the rds database to see if the game has already been scraped before
+        HOST = 'arionsteam.ck6kqnmgieka.eu-west-2.rds.amazonaws.com'
+        USER = 'postgres'
+        PASSWORD = 'thiswillwork'
+        DATABASE = 'postgres'
+        PORT = 5432
+
+        conn = psycopg2.connect(host= HOST, user= USER, password=PASSWORD, dbname=DATABASE, port=PORT)
+        cur = conn.cursor()
+        anumber = prod_id
+        idthis = int(anumber)
+        cur.execute("""SELECT EXISTS(SELECT * FROM steam_dataset WHERE "ID"='{}')""".format(idthis))
+        res = cur.fetchall()
+        if res == [(True,)]:
+            return True
+        else:
+            return False
 
     def _collect_data(self, number):
         # This method runs all the methods for collecting data
@@ -285,6 +304,11 @@ class Scraper:
                 continue
             else:
                 self.add_unique_games(prod_id)
+
+            # if self.check_id(prod_id) == True:
+            #     print("skipped")
+            #     continue
+            
             
             self.game_dict[f'{i}']['ID'] = prod_id 
 
@@ -378,8 +402,10 @@ class Scraper:
     def game_dict_to_rds(self):
         #Takes the dictionay containing all data collected and uploads to RDS
         game_df = self.create_pd_dataframe(self.game_dict)
+        print("workin")
 
         self.dataframe_to_rds(game_df) 
+        print("still workin")
 
 
     pass

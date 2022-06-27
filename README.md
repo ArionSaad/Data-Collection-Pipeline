@@ -388,4 +388,8 @@ def dataframe_to_rds(self, df):
 - Added a progress bar using tqdm package. 
 - Added a method that will add the unique ID of each game to a list. This list will be checked to prevent the same game from being scraped again. 
 
+## Milestone 7
+
+- Modified the webdriver to run in headless mode.
+
 

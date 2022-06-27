@@ -11,10 +11,12 @@ import mimetypes
 import getpass 
 import pandas as pd
 import psycopg2
+import chromedriver_autoinstaller
 from bs4 import BeautifulSoup 
 from time import sleep
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
 from uuid import UUID 
 from lxml import etree 
 from sqlalchemy import create_engine
@@ -28,7 +30,9 @@ class Scraper:
     '''
     def __init__(self, number_of_games: int, url: string,):
 
-        self.driver = webdriver.Chrome() #Using Chrome as the browser for the selenium web driver  
+        chromedriver_autoinstaller.install()
+
+        self._start_webdriver() # set up the headless mode options and start the webdriver
 
         self.number_of_games = number_of_games # number of games that will have their data collected
 
@@ -48,7 +52,7 @@ class Scraper:
         self._cookie_button() #get rid of cookies pop up
 
         sleep(1)
-        self._go_to_top_seller() # go to the top sellers page
+        #self._go_to_top_seller() # go to the top sellers page
 
         sleep(1)
 
@@ -61,6 +65,8 @@ class Scraper:
         self.game_dict = self._make_dictionary(self.number_of_games) # Dictionary where the data for each game will be stored        
 
         self.create_bucket()
+
+        #print(self.check_id(20))
 
         self._collect_data(self.number_of_games)        
 
@@ -80,12 +86,24 @@ class Scraper:
             os.mkdir(path)
         except:
             pass
+    
+    def _start_webdriver(self):
+        #this method is to set up the options for selenium headless mode
+
+        options = Options()
+        options.add_argument("--headless")
+        options.add_argument("window-size=1920,1080")
+
+        self.driver = webdriver.Chrome(chrome_options=options)
+        
 
     def _open_browser(self):
         # This method will open the browser using Selenium and maximise it. It will then go the home page of the store front
         self.driver.maximize_window()
 
         self.driver.get(self.URL)
+
+        
     
     def _close_browser(self):
         #This method will close the browser
@@ -305,9 +323,10 @@ class Scraper:
             else:
                 self.add_unique_games(prod_id)
 
-            # if self.check_id(prod_id) == True:
-            #     print("skipped")
-            #     continue
+            #This will check if the game already exists in the RDS database and if so, it won't be scraped 
+            if self.check_id(prod_id) == True:
+                 print("skipped")
+                 continue
             
             
             self.game_dict[f'{i}']['ID'] = prod_id 
@@ -402,16 +421,18 @@ class Scraper:
     def game_dict_to_rds(self):
         #Takes the dictionay containing all data collected and uploads to RDS
         game_df = self.create_pd_dataframe(self.game_dict)
-        print("workin")
+        
 
         self.dataframe_to_rds(game_df) 
-        print("still workin")
+        
 
 
     pass
 
 if __name__ == "__main__":
     number_of_games = 20
-    url = "https://store.steampowered.com/"
+    #url = "https://store.steampowered.com/"
+
+    url = "https://store.steampowered.com/search/?filter=topsellers"
       
     scrape = Scraper(number_of_games, url)

@@ -391,5 +391,6 @@ def dataframe_to_rds(self, df):
 ## Milestone 7
 
 - Modified the webdriver to run in headless mode.
+- Created a docker image of scraper and uploaded to dockerhub.
 
 

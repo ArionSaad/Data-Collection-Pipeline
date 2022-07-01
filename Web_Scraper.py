@@ -93,8 +93,10 @@ class Scraper:
         options = Options()
         options.add_argument("--headless")
         options.add_argument("window-size=1920,1080")
+        options.add_argument('--no-sandbox')
+        options.add_argument("--disable-setuid-sandbox")
 
-        self.driver = webdriver.Chrome(chrome_options=options)
+        self.driver = webdriver.Chrome(options=options)
         
 
     def _open_browser(self):
@@ -187,9 +189,10 @@ class Scraper:
         # generate a user friendly id unique to each game
 
         fish = soup.find(name ='div', attrs={'class':"glance_tags popular_tags"})
-
-        prod_id = fish['data-appid']
-
+        try:
+            prod_id = fish['data-appid']
+        except:
+            prod_id = 1 
         return prod_id      
 
     def generate_UUID(self): 
@@ -205,8 +208,10 @@ class Scraper:
         #gets the cover image of the game
 
         fish = soup.find(name='img', attrs={'class':'game_header_image_full'})
-        img = fish['src']
-
+        try:
+            img = fish['src']
+        except: 
+            img = "none"
         return img      
     
     def get_game_title(self, soup): 
@@ -214,7 +219,10 @@ class Scraper:
         # gets the game's title
 
         fish = soup.find(name='div', attrs={'id':'appHubAppName', 'class':'apphub_AppName'})
-        name = fish.text
+        try:
+            name = fish.text
+        except:
+            name = "none"
 
         return name
                      
@@ -237,9 +245,12 @@ class Scraper:
         #Get the name of the developer
 
         fish = soup.find(name='div' , attrs={'class':"summary column", 'id':'developers_list' })
-        fish_list = fish.find_all('a')
-        dev_list = [elem.text for elem in fish_list]
-
+        
+        try:
+            fish_list = fish.find_all('a')
+            dev_list = [elem.text for elem in fish_list]
+        except:
+            dev_list = []
         return dev_list            
 
     def game_pub(self, soup):
@@ -257,7 +268,10 @@ class Scraper:
         #Finds the release date
 
         fish = soup.find(name='div', attrs={'class':'date'})
-        date = fish.text
+        try:
+            date = fish.text
+        except:
+            date = "none"
 
         return date
 
@@ -301,7 +315,10 @@ class Scraper:
         conn = psycopg2.connect(host= HOST, user= USER, password=PASSWORD, dbname=DATABASE, port=PORT)
         cur = conn.cursor()
         anumber = prod_id
-        idthis = int(anumber)
+        try:
+            idthis = int(anumber)
+        except:
+            idthis = 1
         cur.execute("""SELECT EXISTS(SELECT * FROM steam_dataset WHERE "ID"='{}')""".format(idthis))
         res = cur.fetchall()
         if res == [(True,)]:

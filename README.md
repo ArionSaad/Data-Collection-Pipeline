@@ -392,5 +392,6 @@ def dataframe_to_rds(self, df):
 
 - Modified the webdriver to run in headless mode.
 - Created a docker image of scraper and uploaded to dockerhub.
+- Created an EC2 instance to run the docker image on AWS.
 
 

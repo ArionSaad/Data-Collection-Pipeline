@@ -397,11 +397,10 @@ def dataframe_to_rds(self, df):
 	- HTTP: Anywhere IPv4, 
 	- HTTPS: Anywhere IPv4, 
 	- SSH: My IP. 
-- And 2 outbound rules:
-	- HTTP: Anywhere IPv4, 
-	- HTTPS: Anywhere IPv4
+- And outbound rule:
+	- All traffic : Anywhere IPv4
 - to run docker container 
-'''
+```
 docker run -it -v /dev/shm:/dev/shm arionsaad/steamscraper:v1
-'''
+```
 

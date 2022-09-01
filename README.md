@@ -404,3 +404,52 @@ def dataframe_to_rds(self, df):
 docker run -it -v /dev/shm:/dev/shm arionsaad/steamscraper:v1
 ```
 
+## Milestone 8
+
+- set up prometehus
+- created prometheus.yml file with:
+```
+global:
+  scrape_interval: '15s'  # By default, scrape targets every 15 seconds.
+  scrape_timeout: '10s'
+  external_labels:
+    monitor: 'codelab-monitor'
+
+scrape_configs:
+
+  # Prometheus monitoring itself
+  - job_name: 'prometheus'
+    scrape_interval: '10s'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # OS monitoring
+  - job_name: 'wmiexporter'
+    scrape_interval: '30s'
+    static_configs:
+      - targets: ['localhost:9182']
+
+  # Docker monitoring
+  - job_name: 'docker'
+         # metrics_path defaults to '/metrics'
+         # scheme defaults to 'http'.
+    static_configs:
+      - targets: ['localhost:9323'] # metrics address from our daemon.json file
+```
+- run prometheus with:
+```
+sudo docker run --rm -d --network=host --name prometheus -v /root/prometheus.yml prom/prometheus --config.file=/etc/prometheus/prometheus.yml --web.enable-lifecycle
+```
+- Added inbound rule to security group for port 9090 from anywhere.
+- Configure prometheus to track docker 
+- Created daemon.json file:
+```
+{
+    "metrics-addr" : "localhost:9323",
+    "experimental": true,
+    "features": {
+    "buildkit": true
+    }
+}
+```
+

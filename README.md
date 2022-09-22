@@ -455,6 +455,7 @@ sudo docker run --rm -d --network=host --name prometheus -v /root/prometheus.yml
 
 ## Milestone 9
 
--
+- Set up CI/CD for Github
+- Created a Github action which automatically updates the Docker image with the latest files whenever a push has been made to Github.
 
 

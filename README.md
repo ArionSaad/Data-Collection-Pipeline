@@ -441,8 +441,7 @@ scrape_configs:
 sudo docker run --rm -d --network=host --name prometheus -v /root/prometheus.yml prom/prometheus --config.file=/etc/prometheus/prometheus.yml --web.enable-lifecycle
 ```
 - Added inbound rule to security group for port 9090 from anywhere.
-- Configure prometheus to track docker 
-- Created daemon.json file:
+- Configure Docker to allow Prometheus to collect metrics by adding this code to the Docker daemon.json file:
 ```
 {
     "metrics-addr" : "localhost:9323",
@@ -452,4 +451,10 @@ sudo docker run --rm -d --network=host --name prometheus -v /root/prometheus.yml
     }
 }
 ```
+- Set up Grafana dashboard for these metrics collected by Prometheus.
+
+## Milestone 9
+
+-
+
 
